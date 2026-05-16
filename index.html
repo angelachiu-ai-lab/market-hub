@@ -1,0 +1,268 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Database, 
+  Search, 
+  ChevronDown, 
+  Cpu, 
+  RefreshCw, 
+  RotateCcw, 
+  ExternalLink, 
+  Mail, 
+  Zap, 
+  Lock,
+  LineChart,
+  Globe,
+  PieChart,
+  TrendingUp
+} from 'lucide-react';
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-[#2a2e39] border border-slate-700/40 rounded-xl overflow-hidden backdrop-blur-sm ${className}`}>
+    {children}
+  </div>
+);
+
+export default function App() {
+  const [tickers, setTickers] = useState({
+    futures: '',
+    forex: '',
+    indices: '',
+    stocks: ''
+  });
+  const [reportDepth, setReportDepth] = useState('deep');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [reportData, setReportData] = useState(null);
+  const [activeTab, setActiveTab] = useState('news');
+
+  const assetOptions = {
+    futures: ['/ES (S&P 500)', '/NQ (Nasdaq 100)', '/GC (Gold)', '/CL (Crude Oil)', '/BTC (Bitcoin Futures)', '/ZB (30yr Bond)', '/6E (Euro)', '/YM (Dow)', '/SI (Silver)', '/HG (Copper)'],
+    forex: ['EUR/USD', 'USD/JPY', 'GBP/USD', 'AUD/USD', 'USD/CAD', 'USD/CHF', 'NZD/USD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY'],
+    indices: ['$SPX (S&P 500)', '$NDX (Nasdaq 100)', '$DJI (Dow Jones)', '$RUT (Russell 2000)', '$VIX (Volatility)', '$DXY (Dollar Index)', '$FTSE', '$DAX', '$N225', '$HSI'],
+    stocks: ['$NVDA (Nvidia)', '$AAPL (Apple)', '$TSLA (Tesla)', '$MSFT (Microsoft)', '$AMZN (Amazon)', '$META (Meta)', '$GOOGL (Alphabet)', '$AMD', '$NFLX', '$BRK.B']
+  };
+
+  const generateAnalysis = () => {
+    setIsAnalyzing(true);
+    setActiveTab('news');
+    
+    const selected = Object.entries(tickers)
+      .filter(([_, value]) => value !== '')
+      .map(([cat, val]) => ({ ticker: val.split(' ')[0], category: cat }));
+
+    setTimeout(() => {
+      const activeAssets = selected.length > 0 ? selected : [{ ticker: 'Global Markets', category: 'General' }];
+
+      const dynamicNews = Array.from({ length: 5 }).map((_, index) => {
+        const asset = activeAssets[index % activeAssets.length]; 
+        const templates = [
+          { title: `Institutional Derivatives: Massive Gamma Squeeze Risk Detected in ${asset.ticker}`, source: "BLOOMBERG", takeaway: `Order book density for ${asset.ticker} suggests a rapid liquidation event if current support breaks.` },
+          { title: `Macro Divergence: ${asset.ticker} Decouples from S&P Following Yield Shift`, source: "REUTERS", takeaway: `Algorithmic desks note a 4-sigma divergence in ${asset.ticker} correlations.` },
+          { title: `Dark Pool Synthesis: Unusually Large Block Trades Executed on ${asset.ticker}`, source: "WSJ", takeaway: `Off-exchange volume for ${asset.ticker} has spiked 340% above the 20-day mean.` },
+          { title: `Regulatory Headwinds: Policy Shift Impacting ${asset.ticker} Liquidity Buffers`, source: "CNBC", takeaway: `New oversight chatter is forcing risk officers to trim exposure to ${asset.ticker}.` },
+          { title: `Momentum Alert: ${asset.ticker} Tests multi-month resistance with Heavy Volume`, source: "FT", takeaway: `Breakout probability for ${asset.ticker} is estimated at 72%.` }
+        ];
+        return templates[index];
+      });
+
+      const dynamicSentiment = Array.from({ length: 5 }).map((_, index) => {
+        const asset = activeAssets[index % activeAssets.length]; 
+        const templates = [
+          { type: 'RUMOR', tag: '[SOCIAL MEDIA RUMOR]', text: `"High-follower X account highlighting a hidden buy-wall for ${asset.ticker}. Claims a major Sovereign Wealth Fund is accumulating."` },
+          { type: 'IG_SENTIMENT', tag: 'IG CLIENT SENTIMENT', text: `"Retail traders are 78% net-long on ${asset.ticker}. According to IG data, this acts as a contrarian indicator."` },
+          { type: 'OVERVIEW', tag: 'SENTIMENT OVERVIEW', text: `"Quantitative social tracking shows ${asset.ticker} mentions up 400% in the last 2 hours."` },
+          { type: 'RUMOR', tag: '[TOP INVESTOR POST]', text: `"Private equity circles discussing structural change in ${asset.ticker} valuation models. Early rotation noted."` },
+          { type: 'IG_SENTIMENT', tag: 'POSITIONING DATA', text: `"Institutional short interest in ${asset.ticker} has hit a ceiling. Positioning suggests retail capitulation."` }
+        ];
+        return templates[index];
+      });
+
+      const dynamicDrivers = activeAssets.slice(0, 3).map((asset, index) => ({
+        label: `DRIVER 0${index + 1}`,
+        text: `Liquidity gaps in ${asset.ticker} order books are amplifying volatility as systematic funds rebalance exposure.`
+      }));
+
+      setReportData({
+        timestamp: new Date().toLocaleTimeString(),
+        assets: activeAssets.map(a => a.ticker).join(', '),
+        news: dynamicNews,
+        sentiment: dynamicSentiment,
+        drivers: dynamicDrivers
+      });
+      setIsAnalyzing(false);
+    }, 1200);
+  };
+
+  const resetAnalysis = () => {
+    setReportData(null);
+    setTickers({ futures: '', forex: '', indices: '', stocks: '' });
+  };
+
+  return (
+    <div className="min-h-screen bg-[#333742] text-slate-200 p-4 md:p-8 flex flex-col items-center">
+      {}
+      <header className="max-w-7xl w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
+        <div className="flex items-center gap-4">
+          <div className="bg-emerald-500/20 p-2.5 rounded-lg border border-emerald-500/30">
+            <Database className="w-6 h-6 text-emerald-400" />
+          </div>
+          <h1 className="text-xl md:text-3xl font-bold tracking-tight text-white">
+            Financial Market Intelligence Hub
+          </h1>
+        </div>
+        <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-800/50 rounded-full border border-slate-700/50">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+          <span className="text-[10px] font-bold text-emerald-400 tracking-widest uppercase">Core Engine: Ready</span>
+        </div>
+      </header>
+
+      {}
+      <div className="max-w-7xl w-full">
+        <Card className="bg-[#3a3f4b] border-slate-600/40 shadow-2xl p-4 md:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Left Column: Asset Selection & Action */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-[11px] tracking-[0.2em] uppercase">
+                <Search className="w-4 h-4" /> CHOOSE ASSET
+              </div>
+              
+              <div className="grid grid-cols-1 gap-5 bg-slate-900/30 p-5 rounded-xl border border-slate-700/30 shadow-[0_0_20px_rgba(99,102,241,0.12)]">
+                {Object.keys(assetOptions).map((cat, idx) => (
+                  <div key={cat} className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block pl-1">
+                      {idx + 1}. {cat}
+                    </label>
+                    <div className="relative group">
+                      <select 
+                        className="w-full bg-[#2a2e39] border border-slate-700/50 rounded-lg px-4 py-3.5 text-sm text-slate-200 outline-none appearance-none hover:border-emerald-500/50 transition-all cursor-pointer"
+                        value={tickers[cat]}
+                        onChange={(e) => setTickers({...tickers, [cat]: e.target.value})}
+                      >
+                        <option value="">Select Asset...</option>
+                        {assetOptions[cat].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-emerald-400">
+                        <ChevronDown className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Action Button: Docked inside the left column below inputs */}
+                <button 
+                  onClick={generateAnalysis}
+                  disabled={isAnalyzing || !Object.values(tickers).some(v => v !== '')}
+                  className="w-full py-5 mt-4 bg-[#4fb185] hover:bg-[#5fc195] disabled:opacity-30 text-white font-bold uppercase tracking-[0.4em] rounded-xl transition-all flex items-center justify-center gap-4 shadow-[0_4px_25px_rgba(79,177,133,0.3)] active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-3">
+                    {}
+                    <span>{isAnalyzing ? 'Synthesizing...' : 'GO'}</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Parameters & Results */}
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-2 gap-3">
+                {['standard', 'deep'].map(d => (
+                  <button key={d} onClick={() => setReportDepth(d)} 
+                    className={`py-3.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${reportDepth === d ? 'bg-[#4fb185] text-white shadow-[0_4px_25px_rgba(79,177,133,0.3)]' : 'bg-slate-800/50 text-slate-500 border border-slate-700/50'}`}>
+                    {d === 'deep' ? 'Deep Dive' : 'Standard'}
+                  </button>
+                ))}
+              </div>
+
+              {}
+              <div className="flex-1 bg-[#2a2e39]/60 border border-slate-700/50 rounded-xl overflow-hidden relative min-h-[500px]">
+                {isAnalyzing && (
+                  <div className="absolute inset-0 z-20 bg-[#2a2e39]/95 backdrop-blur-md flex flex-col items-center justify-center space-y-4">
+                    <RefreshCw className="w-10 h-10 text-emerald-400 animate-spin" />
+                    <span className="text-[10px] text-emerald-400 font-bold tracking-widest uppercase animate-pulse">Synthesizing Signals</span>
+                  </div>
+                )}
+
+                {reportData ? (
+                  <div className="p-6 h-full overflow-y-auto flex flex-col scrollbar-thin scrollbar-thumb-emerald-500">
+                    <div className="border-b border-slate-700/40 pb-4 mb-5 flex justify-between items-start">
+                      <div>
+                        <span className="text-[9px] font-bold px-2 py-0.5 bg-[#4fb185] rounded text-white tracking-widest uppercase">INTELLIGENCE BRIEF</span>
+                        <h3 className="text-lg font-bold text-white uppercase mt-2">{reportData.assets}</h3>
+                      </div>
+                      <button onClick={resetAnalysis} className="p-1 hover:text-emerald-400 transition-colors">
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="flex bg-[#1e2128] p-1 rounded-lg border border-slate-700/50 mb-5">
+                      {['news', 'sentiment', 'drivers'].map(tab => (
+                        <button key={tab} onClick={() => setActiveTab(tab)} 
+                          className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${activeTab === tab ? 'bg-[#3a3f4b] text-white border border-slate-600/50' : 'text-slate-500'}`}>
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex-1 space-y-4">
+                      {activeTab === 'news' && reportData.news.map((item, i) => (
+                        <div key={i} className="p-3 bg-[#3a3f4b] border-l-2 border-emerald-500 rounded-r-lg group">
+                          <div className="flex justify-between items-start gap-4">
+                            <span className="text-xs font-bold text-white leading-snug">{item.title}</span>
+                            <span className="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded font-bold">{item.source}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 italic mt-1 leading-relaxed">"{item.takeaway}"</p>
+                        </div>
+                      ))}
+
+                      {activeTab === 'sentiment' && reportData.sentiment.map((s, i) => (
+                        <div key={i} className={`p-3 rounded-lg border transition-all ${s.type === 'RUMOR' ? 'bg-[#3e343d] border-[#5e3b48]' : 'bg-slate-800/40 border-slate-700/50'}`}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className={`text-[8px] font-bold uppercase ${s.type === 'RUMOR' ? 'text-rose-400' : 'text-emerald-400'}`}>{s.tag}</span>
+                            <ExternalLink className="w-3 h-3 text-slate-500 cursor-pointer hover:text-white transition-colors" />
+                          </div>
+                          <p className="text-[11px] italic text-slate-300 leading-relaxed">{s.text}</p>
+                        </div>
+                      ))}
+
+                      {activeTab === 'drivers' && reportData.drivers.map((d, i) => (
+                        <div key={i} className="p-4 bg-[#3a3f4b] border border-slate-700/50 rounded-lg">
+                          <span className="text-emerald-400 font-mono text-[9px] font-bold uppercase">{d.label}</span>
+                          <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">{d.text}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-6 mt-6 border-t border-slate-700/40 space-y-4">
+                      <p className="text-[9px] text-slate-500 font-bold italic text-center uppercase tracking-wider">Cross-reference with official 10-K/10-Q filings.</p>
+                      <button className="w-full flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold uppercase rounded-lg border border-slate-700/50 transition-all">
+                        <Mail className="w-3.5 h-3.5" /> Dispatch via Email
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 p-8 text-center space-y-6">
+                    <div className="p-6 bg-slate-800/20 border border-slate-700/40 rounded-xl space-y-4 max-w-xs shadow-inner">
+                      <div className="flex items-center gap-2 text-emerald-400/60 font-mono text-[10px] uppercase tracking-widest">
+                        <Lock className="w-3 h-3" /> AUTH: SECURE_HARDCODE_ACTIVE
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-500 font-mono text-[10px] uppercase tracking-widest">
+                        <Zap className="w-3 h-3" /> GROUNDING: X + IG SIGNALS
+                      </div>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">Select asset focus to initiate synthesis.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <style>{`
+        .scrollbar-thin::-webkit-scrollbar { width: 5px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #4fb185; border-radius: 10px; }
+      `}</style>
+    </div>
+  );
+}
