@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Market Intelligence Hub</title>
     
+    <!-- Core External Dependencies via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -22,32 +23,44 @@
         .scrollbar-thin::-webkit-scrollbar { width: 5px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: #4fb185; border-radius: 10px; }
-        .lucide { width: 1.1em; height: 1.1em; display: inline-block; vertical-align: middle; }
+        .lucide { width: 1.1em; height: 1.1em; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
+    <!-- Live JSX Compilation Block -->
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Fail-safe Icon Component for Dynamic Lucide Injection
+        // CRITICAL FIX: Safe Icon Wrapper to prevent React DOM mutation crashes
         const Icon = ({ name, className = "" }) => {
-            const iconRef = useRef(null);
+            const containerRef = useRef(null);
             
             useEffect(() => {
-                if (window.lucide && iconRef.current) {
+                if (window.lucide && containerRef.current) {
                     try {
+                        // Clear previous content to prevent duplicates
+                        containerRef.current.innerHTML = '';
+                        
+                        // Create a fresh 'i' tag that React doesn't directly track
+                        const i = document.createElement('i');
                         const kebabName = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-                        iconRef.current.setAttribute('data-lucide', kebabName);
-                        window.lucide.createIcons();
+                        i.setAttribute('data-lucide', kebabName);
+                        i.className = `lucide ${className}`;
+                        
+                        containerRef.current.appendChild(i);
+                        
+                        // Tell Lucide to only replace elements INSIDE this specific span
+                        window.lucide.createIcons({ root: containerRef.current });
                     } catch (e) {
                         console.error("Lucide rendering error:", e);
                     }
                 }
-            }, [name]);
+            }, [name, className]);
 
-            return <i ref={iconRef} className={`lucide ${className}`}></i>;
+            // React only tracks this empty span, preventing the "NotFoundError" crash
+            return <span ref={containerRef} className="inline-flex items-center justify-center"></span>;
         };
 
         const Card = ({ children, className = "" }) => (
@@ -79,7 +92,6 @@
             setIsAnalyzing(true);
             setActiveTab('news');
             
-            // Safe parsing that won't break if strings don't contain spaces
             const selected = Object.entries(tickers)
               .filter(([_, value]) => value && value.trim() !== '')
               .map(([cat, val]) => {
@@ -87,7 +99,6 @@
                  return { ticker: cleanTicker, category: cat };
               });
 
-            // Simulate parsing pipeline delay
             setTimeout(() => {
               const activeAssets = selected.length > 0 ? selected : [{ ticker: 'Global Markets', category: 'General' }];
               const assetNamesString = activeAssets.map(a => a.ticker).join(', ');
@@ -137,7 +148,6 @@
             setTickers({ futures: '', forex: '', indices: '', stocks: '' });
           };
 
-          // Helper to check if at least one asset dropdown is active
           const hasSelection = Object.values(tickers).some(v => v && v.trim() !== '');
 
           return (
@@ -161,7 +171,6 @@
                 <Card className="bg-[#3a3f4b] border-slate-600/40 shadow-2xl p-4 md:p-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     
-                    {/* Left Column: Asset Target Arrays */}
                     <div className="space-y-6">
                       <div className="flex items-center gap-2 text-emerald-400 font-bold text-[11px] tracking-[0.2em] uppercase">
                         <Icon name="Search" className="w-4 h-4" /> CHOOSE ASSET
@@ -189,7 +198,6 @@
                           </div>
                         ))}
 
-                        {/* Centered Execution Element */}
                         <button 
                           onClick={generateAnalysis}
                           disabled={isAnalyzing || !hasSelection}
@@ -200,7 +208,6 @@
                       </div>
                     </div>
 
-                    {/* Right Column: Processing Analytics Panels */}
                     <div className="flex flex-col gap-6">
                       <div className="grid grid-cols-2 gap-3">
                         {['standard', 'deep'].map(d => (
@@ -298,7 +305,6 @@
           );
         }
 
-        // Bootstrapping Render Tree
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
